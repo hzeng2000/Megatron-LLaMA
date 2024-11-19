@@ -4,10 +4,11 @@
 
 export CUDA_DEVICE_MAX_CONNECTIONS=1
 
-CHECKPOINT_PATH=<Specify path>
-VOCAB_FILE=<Specify path to file>/gpt2-vocab.json
-MERGE_FILE=<Specify path to file>/gpt2-merges.txt
-DATA_PATH=<Specify path and file prefix>_text_document
+CHECKPOINT_PATH=/WORK/PUBLIC/zhaijd_work/dataset/gpt345/release/mp_rank_00/model_optim_rng.pt
+# TENSORBOARD_LOGS_PATH=/WORK/PUBLIC/zhaijd_work/qi/Megatron-LM/workspace/logs
+VOCAB_FILE=/home/fit/zhaijd/WORK/dataset/gpt345/gpt2-vocab.json
+MERGE_FILE=/home/fit/zhaijd/WORK/dataset/gpt345/gpt2-merges.txt
+DATA_PATH=/home/fit/zhaijd/WORK/qi/data/oscar-en-10k-meg-gpt_text_document
 
 GPT_ARGS="
     --num-layers 24 \

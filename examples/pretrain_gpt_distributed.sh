@@ -1,31 +1,41 @@
 #!/bin/bash
 
 # Runs the "345M" parameter model
+# run the script in respected node with $NODE_RANK
+# e.g. 
+# node0: bash pretrain_gpt_distributed.sh 0 
+# node1: bash pretrain_gpt_distributed.sh 1
 
 export CUDA_DEVICE_MAX_CONNECTIONS=1
-
+export NCCL_SOCKET_TIMEOUT=10
 GPUS_PER_NODE=8
 # Change for multinode config
-MASTER_ADDR=localhost
-MASTER_PORT=6000
-NNODES=1
-NODE_RANK=0
+# MASTER_ADDR=localhost
+MASTER_ADDR=11.11.4.3
+MASTER_PORT=12345
+NNODES=2
+NODE_RANK=$1
 WORLD_SIZE=$(($GPUS_PER_NODE*$NNODES))
 
-CHECKPOINT_PATH=<Specify path>
-VOCAB_FILE=<Specify path to file>/gpt2-vocab.json
-MERGE_FILE=<Specify path to file>/gpt2-merges.txt
-DATA_PATH=<Specify path and file prefix>_text_document
+# CHECKPOINT_PATH=/WORK/PUBLIC/zhaijd_work/dataset/gpt345/release/mp_rank_00/model_optim_rng.pt
+CHECKPOINT_PATH=/WORK/PUBLIC/zhaijd_work/dataset/gpt345/release/mp_rank_00
+# TENSORBOARD_LOGS_PATH=/WORK/PUBLIC/zhaijd_work/qi/Megatron-LM/workspace/logs
+VOCAB_FILE=/home/fit/zhaijd/WORK/dataset/gpt345/gpt2-vocab.json
+MERGE_FILE=/home/fit/zhaijd/WORK/dataset/gpt345/gpt2-merges.txt
+DATA_PATH=/home/fit/zhaijd/WORK/qi/data/oscar-en-10k-meg-gpt_text_document
 
 DISTRIBUTED_ARGS="
     --nproc_per_node $GPUS_PER_NODE \
     --nnodes $NNODES \
     --node_rank $NODE_RANK \
     --master_addr $MASTER_ADDR \
-    --master_port $MASTER_PORT
+    --master_port $MASTER_PORT \
+    --max-restart 2 \
 "
 
 GPT_ARGS="
+    --tensor-model-parallel-size 4 \
+    --pipeline-model-parallel-size 1 \
     --num-layers 24 \
     --hidden-size 1024 \
     --num-attention-heads 16 \
@@ -66,3 +76,11 @@ torchrun $DISTRIBUTED_ARGS pretrain_gpt.py \
     --distributed-backend nccl \
     --save $CHECKPOINT_PATH \
     --load $CHECKPOINT_PATH
+# srun -N $NNODES -n $WORLD_SIZE --gres=gpu:$GPUS_PER_NODE --ntasks-per-node=$GPUS_PER_NODE \
+#     python pretrain_gpt.py \
+#     $GPT_ARGS \
+#     $DATA_ARGS \
+#     $OUTPUT_ARGS \
+#     --distributed-backend nccl \
+#     --save $CHECKPOINT_PATH \
+#     --load $CHECKPOINT_PATH
