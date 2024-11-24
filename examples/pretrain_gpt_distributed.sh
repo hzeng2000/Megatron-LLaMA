@@ -3,26 +3,41 @@
 # Runs the "345M" parameter model
 # run the script in respected node with $NODE_RANK
 # e.g. 
-# node0: bash pretrain_gpt_distributed.sh 0 
+"""
+python tools/preprocess_data.py \
+       --input /home/fit/zhaijd/WORK/hzeng/data/oscar-en-10k.jsonl \
+       --output-prefix /home/fit/zhaijd/WORK/hzeng/data/oscar-en-10k-meg-gpt\
+       --tokenizer-type GPT2BPETokenizer \
+       --vocab-file /home/fit/zhaijd/WORK/hzeng/data/gpt345/gpt2-vocab.json \
+       --merge-file /home/fit/zhaijd/WORK/hzeng/data/gpt345/gpt2-merges.txt \
+       --workers 16 \
+       --append-eod
+"""       
+# node0: bash pretrain_gpt_distributed.sh 0
 # node1: bash pretrain_gpt_distributed.sh 1
 
 export CUDA_DEVICE_MAX_CONNECTIONS=1
-export NCCL_SOCKET_TIMEOUT=10
+# export NCCL_SOCKET_TIMEOUT=10
+export NCCL_DEBUG=INFO
+export NCCL_SOCKET_IFNAME=ens14f0
 GPUS_PER_NODE=8
 # Change for multinode config
 # MASTER_ADDR=localhost
-MASTER_ADDR=11.11.4.3
+# MASTER_ADDR=11.11.4.3
+MASTER_ADDR=11.11.1.2 
+# MASTER_ADDR=14.14.1.9
 MASTER_PORT=12345
+# NNODES=1
 NNODES=2
 NODE_RANK=$1
 WORLD_SIZE=$(($GPUS_PER_NODE*$NNODES))
 
-# CHECKPOINT_PATH=/WORK/PUBLIC/zhaijd_work/dataset/gpt345/release/mp_rank_00/model_optim_rng.pt
-CHECKPOINT_PATH=/WORK/PUBLIC/zhaijd_work/dataset/gpt345/release/mp_rank_00
+# CHECKPOINT_PATH=/home/fit/zhaijd/WORK/hzeng/data/gpt345/release/mp_rank_00/model_optim_rng.pt
+CHECKPOINT_PATH=/home/fit/zhaijd/WORK/hzeng/data/gpt345/release/mp_rank_00
 # TENSORBOARD_LOGS_PATH=/WORK/PUBLIC/zhaijd_work/qi/Megatron-LM/workspace/logs
-VOCAB_FILE=/home/fit/zhaijd/WORK/dataset/gpt345/gpt2-vocab.json
-MERGE_FILE=/home/fit/zhaijd/WORK/dataset/gpt345/gpt2-merges.txt
-DATA_PATH=/home/fit/zhaijd/WORK/qi/data/oscar-en-10k-meg-gpt_text_document
+VOCAB_FILE=/home/fit/zhaijd/WORK/hzeng/data/gpt345/gpt2-vocab.json
+MERGE_FILE=/home/fit/zhaijd/WORK/hzeng/data/gpt345/gpt2-merges.txt
+DATA_PATH=/home/fit/zhaijd/WORK/hzeng/data/oscar-en-10k-meg-gpt_text_document
 
 DISTRIBUTED_ARGS="
     --nproc_per_node $GPUS_PER_NODE \
